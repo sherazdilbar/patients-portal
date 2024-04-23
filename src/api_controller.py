@@ -1,6 +1,6 @@
 """Patient API Controller"""
 
-from flask import Flask
+from flask import Flask, jsonify, request
 from patient_db import PatientDB
 
 
@@ -33,25 +33,40 @@ class PatientAPIController:
     """
 
     def create_patient(self):
-        pass
+        data = request.json
+    # Here you should include data validation
+        if 'patient_name' in data and 'patient_age' in data:  # Example validation
+            result = self.patient_db.insert_patient(data)
+            return jsonify(result), 200
+        else:
+            return jsonify({"error": "Missing data"}), 400
 
     def get_patients(self):
-        pass
+        patients = self.patient_db.select_all_patients()
+        return jsonify(patients), 200
 
     def get_patient(self, patient_id):
-        pass
-
+        patient = self.patient_db.select_patient(patient_id)
+        if patient:
+            return jsonify(patient), 200
+        else:
+            return jsonify({"error": "Patient not found"}), 404
+        
     def update_patient(self, patient_id):
-        pass
+        data = request.get_json()
+        if self.patient_db.update_patient(patient_id, data):
+            return jsonify({"success": "Patient updated"}), 200
+        else:
+            return jsonify({"error": "Update failed"}), 400
 
     def delete_patient(self, patient_id):
-        pass
+        if self.patient_db.delete_patient(patient_id):
+            return jsonify({"success": "Patient deleted"}), 200
+        else:
+            return jsonify({"error": "Delete failed"}), 400
 
     def run(self):
-        """
-        Runs the Flask application.
-        """
-        self.app.run()
+        self.app.run(debug=True) 
 
 
 PatientAPIController()
